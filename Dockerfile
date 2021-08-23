@@ -14,13 +14,31 @@ RUN apt-get -y update \
     libx11-xcb1 \
     libasound2 \
     libxshmfence1 \
-    git
+    git \
+    libnss3-dev \
+    libxkbfile1 \
+    libsecret-1-0 \
+    libgtk-3-0 \
+    libxss1 \
+    libgbm1
 
-RUN wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | apt-key add - \
-  && add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
+RUN curl -s https://api.github.com/repos/VSCodium/vscodium/releases/latest \
+  | grep "browser_download_url.*deb" \
+  | cut -d : -f 2,3 \
+  | tr -d \" \
+  | wget -qi -
 
-RUN apt-get -y update \
-  && apt-get -y install code
+RUN dpkg -i $(ls -l \
+  | grep -e "codium.*amd64.deb" \
+  | grep -v "sha256" \
+  | cut -d' ' -f11)
+
+
+#RUN wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | apt-key add - \
+#  && add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
+
+#RUN apt-get -y update \
+#  && apt-get -y install code
 
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -77,11 +95,11 @@ RUN npm install -g \
 
 
 RUN git clone https://github.com/apple/sourcekit-lsp \
-  && cd sourcekit-lsp/Editors/vscode \
-  && npm install \
-  && npm run dev-package \
-  && su user -c "code --install-extension sourcekit-lsp-development.vsix"
+ && cd sourcekit-lsp/Editors/vscode \
+ && npm install \
+ && npm run dev-package \
+ && su user -c "codium --install-extension sourcekit-lsp-development.vsix"
 
 
 USER user
-ENTRYPOINT ["code", "--verbose", "--user-data-dir=/home/user"]
+ENTRYPOINT ["codium", "--verbose", "--user-data-dir=/home/user"]
