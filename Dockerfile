@@ -19,7 +19,8 @@ RUN apt-get -y update \
     libsecret-1-0 \
     libgtk-3-0 \
     libxss1 \
-    libgbm1
+    libgbm1 \
+    sqlite3
 
 # install codium
 #RUN curl -s https://api.github.com/repos/VSCodium/vscodium/releases/latest \
@@ -96,6 +97,10 @@ RUN git clone https://github.com/apple/sourcekit-lsp \
  && su user -c "code --install-extension sourcekit-lsp-development.vsix"
  #&& su user -c "codium --install-extension sourcekit-lsp-development.vsix"
 
+
+RUN apt-get update -y && apt-get install -y \
+  libsqlite3-dev
+
 USER user
-ENTRYPOINT ["code", "--verbose", "--disable-gpu", "--user-data-dir=/home/user"]
+ENTRYPOINT ["code", "--verbose", "--disable-gpu", "--disable-extensions", "--user-data-dir=/home/user"]
 #ENTRYPOINT ["codium", "--verbose", "--disable-gpu", "--user-data-dir=/home/user"]
