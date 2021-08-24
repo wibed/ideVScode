@@ -3,7 +3,6 @@ FROM ubuntu:bionic as base
 RUN groupadd -g 1001 user
 RUN useradd -u 1001 -g 1001 -G video -ms /bin/bash user
 
-
 RUN apt-get -y update \
   && apt-get -y upgrade \
   && apt-get install -y \
@@ -22,24 +21,23 @@ RUN apt-get -y update \
     libxss1 \
     libgbm1
 
-RUN curl -s https://api.github.com/repos/VSCodium/vscodium/releases/latest \
-  | grep "browser_download_url.*deb" \
-  | cut -d : -f 2,3 \
-  | tr -d \" \
-  | wget -qi -
+# install codium
+#RUN curl -s https://api.github.com/repos/VSCodium/vscodium/releases/latest \
+#  | grep "browser_download_url.*deb" \
+#  | cut -d : -f 2,3 \
+#  | tr -d \" \
+#  | wget -qi -
 
-RUN dpkg -i $(ls -l \
-  | grep -e "codium.*amd64.deb" \
-  | grep -v "sha256" \
-  | cut -d' ' -f11)
+#RUN dpkg -i $(ls -l \
+#  | grep -e "codium.*amd64.deb" \
+#  | grep -v "sha256" \
+#  | cut -d' ' -f11)
 
-
-#RUN wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | apt-key add - \
-#  && add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
-
-#RUN apt-get -y update \
-#  && apt-get -y install code
-
+# install vscode
+RUN wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | apt-key add - \
+  && add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
+RUN apt-get -y update \
+  && apt-get -y install code
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV DEBCONF_NONINTERACTIVE_SEEN=true
@@ -73,7 +71,6 @@ RUN tar -xzf swift.tar.gz --directory / --strip-components=1 \
   && chmod -R o+r /usr/lib/swift \
   && rm -rf swift.tar.gz.sig swift.tar.gz
 
-
 RUN apt-get install -y \
     python3.8 \
     python3-pip
@@ -82,7 +79,6 @@ RUN python -m pip install pip
 RUN pip3 install \
     grip \
     python-lsp-server
-
 
 RUN curl -fsSL https://deb.nodesource.com/setup_current.x | bash -
 RUN apt-get install -y nodejs
@@ -93,13 +89,13 @@ RUN npm install -g \
     typescript-language-server \
     vscode-css-languageserver-bin
 
-
 RUN git clone https://github.com/apple/sourcekit-lsp \
  && cd sourcekit-lsp/Editors/vscode \
  && npm install \
  && npm run dev-package \
- && su user -c "codium --install-extension sourcekit-lsp-development.vsix"
-
+ && su user -c "code --install-extension sourcekit-lsp-development.vsix"
+ #&& su user -c "codium --install-extension sourcekit-lsp-development.vsix"
 
 USER user
-ENTRYPOINT ["codium", "--verbose", "--user-data-dir=/home/user"]
+ENTRYPOINT ["code", "--verbose", "--disable-gpu", "--user-data-dir=/home/user"]
+#ENTRYPOINT ["codium", "--verbose", "--disable-gpu", "--user-data-dir=/home/user"]

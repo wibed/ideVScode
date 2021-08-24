@@ -12,9 +12,13 @@ GNAME := $(shell id -un)
 UNAME := $(shell id -gn)
 
 build_nc:
+	docker volume rm ${TAGNAME}Data || true
+	docker volume create ${TAGNAME}Data
 	docker build . --no-cache -t ${TAGNAME}
 
 sync:
+	docker volume rm ${TAGNAME}Data || true
+	docker volume create ${TAGNAME}Data
 	docker build . -t ${TAGNAME}
 
 run:
@@ -27,4 +31,5 @@ run:
 		-e GNAME="${GNAME}" \
 		-v /tmp/.X11-unix:/tmp/.X11-unix \
 		-v /home/general/work:/work \
+		-v ${TAGNAME}Data:/home/user \
 		${TAGNAME}
